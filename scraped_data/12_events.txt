@@ -1,0 +1,42 @@
+================================================================================
+PAGE: Events
+URL: https://northernontarioparty.org/events/
+SCRAPED: 2026-06-04
+================================================================================
+
+CONTACT INFORMATION
+-------------------
+Phone: +1 (807) 632-7094
+Email: Northernontarioparty@hotmail.com
+Address: 76 Oswalt ST Thunder Bay ON P7A 6TI
+
+
+EVENTS
+------
+Note: The page displays an "Events" section, but no specific event listings,
+dates, times, locations, or descriptions are currently provided in the
+accessible content.
+
+The webpage structure indicates an events page exists, but the actual event
+data (listings, dates, times, registration information) is either:
+- Not currently populated
+- Loaded dynamically via JavaScript
+- Displayed in a format not captured in text extraction
+
+To view current events, visiting the website directly or contacting the
+organization would be necessary.
+
+
+ORGANIZATION MISSION
+--------------------
+The Northern Ontario Party aims "to be the voice of Northern Ontario —
+empowering our communities and protecting our resources" and to "create
+a strong, self-reliant Northern Ontario where decisions are made by the
+people who live here."
+
+
+COPYRIGHT
+---------
+© Copyright 2025 | NOP – Northern Ontario Party | Designed by Jonim Digitals
+
+================================================================================

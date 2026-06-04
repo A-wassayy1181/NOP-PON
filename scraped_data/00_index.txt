@@ -1,0 +1,100 @@
+================================================================================
+NORTHERN ONTARIO PARTY - WEBSITE DATA INDEX
+================================================================================
+Website: https://northernontarioparty.org/
+Scraped: 2026-06-04
+Total Pages: 14
+================================================================================
+
+
+PARTY OVERVIEW
+--------------
+Name: Northern Ontario Party (NOP)
+Founded: 1998
+Location: Thunder Bay, Ontario, Canada
+
+Leadership:
+- Kenneth C Jones - Party President
+- Jacques Ouellette - Party Leader
+- Theresa Leppich - Party Secretary
+
+Contact:
+- Phone: +1 (807) 632-7094
+- Email: Northernontarioparty@hotmail.com
+- Address: 76 Oswalt ST Thunder Bay ON P7A 6TI
+
+Mission: "To be the voice of Northern Ontario — empowering our communities
+and protecting our resources and to create a strong, self-reliant Northern
+Ontario where decisions are made by the people who live here, for the
+people who live here."
+
+
+SCRAPED FILES
+-------------
+
+| #  | File                              | Page                       | Content Level |
+|----|-----------------------------------|----------------------------|---------------|
+| 01 | 01_home.txt                       | Home                       | Full          |
+| 02 | 02_about.txt                      | About                      | Full          |
+| 03 | 03_executive_board.txt            | Executive Board            | Full          |
+| 04 | 04_party_constitution.txt         | Party Constitution         | Partial*      |
+| 05 | 05_party_history.txt              | Party History              | Minimal*      |
+| 06 | 06_blog.txt                       | Blog                       | Full          |
+| 07 | 07_in_the_news.txt                | In the NEWS                | Minimal*      |
+| 08 | 08_party_zone.txt                 | Party Zone                 | Minimal*      |
+| 09 | 09_contact.txt                    | Contact                    | Full          |
+| 10 | 10_join_the_party.txt             | Join the Party             | Full          |
+| 11 | 11_donate_today.txt               | Donate Today               | Full          |
+| 12 | 12_events.txt                     | Events                     | Minimal*      |
+| 13 | 13_constitution.txt               | Constitution (Governance)  | Partial*      |
+| 14 | 14_leadership_election_rules.txt  | Leadership Election Rules  | Partial*      |
+
+* Notes on partial/minimal content:
+  - Party Constitution: Document available as downloadable PDF
+  - Party History: Page exists but historical details not populated
+  - In the NEWS: Page template exists but no news articles populated
+  - Party Zone: Member-only section with limited public content
+  - Events: Page exists but no current events listed
+  - Constitution: Links to downloadable document
+  - Leadership Election Rules: Rules not displayed in page content
+
+
+ELECTORAL RIDINGS (14 Districts)
+--------------------------------
+The party covers 14 electoral districts across Northern Ontario including:
+- Timmins
+- Thunder Bay (multiple areas)
+- Sudbury
+- Sault Ste Marie
+- And other Northern Ontario regions
+
+
+BLOG CATEGORIES
+---------------
+- Campaign
+- Diplomatic
+- Election
+- Governance
+- Governmental
+- Public Affairs
+
+
+SOCIAL MEDIA PRESENCE
+---------------------
+- Facebook
+- Twitter
+- LinkedIn
+- Pinterest
+- Instagram
+
+
+MEMBERSHIP INFORMATION
+----------------------
+Membership Plan: 1-3 Years
+Price: $20.00 (discounted from $30.00)
+Donation: $20.00 (discounted from $30.00)
+
+
+================================================================================
+END OF INDEX
+================================================================================

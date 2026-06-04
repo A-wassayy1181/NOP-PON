@@ -1,0 +1,44 @@
+================================================================================
+PAGE: In the NEWS
+URL: https://northernontarioparty.org/in-the-news/
+SCRAPED: 2026-06-04
+================================================================================
+
+CONTACT INFORMATION
+-------------------
+Phone: +1 (807) 632-7094
+Email: Northernontarioparty@hotmail.com
+Address: 76 Oswalt ST Thunder Bay ON P7A 6TI
+
+
+IN THE NEWS
+-----------
+Note: The page displays a news section header but does not contain any actual
+news articles, headlines, dates, or article content.
+
+The "In the NEWS" section appears to be a designated page template, but no
+specific news items, articles, or stories are currently populated on this page.
+
+
+PAGE ELEMENTS
+-------------
+- Navigation menu items
+- Contact information
+- Party logo and branding
+- Footer information with mission statement
+- Quick links to various party pages
+- Newsletter subscription form
+- Social media icons
+
+
+MISSION & VISION
+----------------
+"To be the voice of Northern Ontario — empowering our communities and
+protecting our resources"
+
+
+COPYRIGHT
+---------
+© Copyright 2025 | NOP – Northern Ontario Party | Designed by Jonim Digitals
+
+================================================================================
