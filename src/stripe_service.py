@@ -163,6 +163,7 @@ class StripeService:
         amount: float,
         description: str,
         currency: str = "cad",
+        receipt_email: Optional[str] = None,
     ) -> dict:
         """
         Create and confirm a PaymentIntent.
@@ -184,7 +185,7 @@ class StripeService:
         amount_cents = int(amount * 100)
 
         try:
-            payment_intent = stripe.PaymentIntent.create(
+            create_kwargs = dict(
                 amount=amount_cents,
                 currency=currency,
                 customer=customer_id,
@@ -195,10 +196,12 @@ class StripeService:
                     "enabled": True,
                     "allow_redirects": "never",
                 },
-                metadata={
-                    "description": description,
-                },
+                metadata={"description": description},
             )
+            if receipt_email:
+                create_kwargs["receipt_email"] = receipt_email
+
+            payment_intent = stripe.PaymentIntent.create(**create_kwargs)
 
             if payment_intent.status == "succeeded":
                 return {

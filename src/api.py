@@ -79,13 +79,16 @@ class SessionData:
         self.payment_methods: list = []
         self.payment_setup_complete: bool = False
         self.pending_checkout_session_id: Optional[str] = None
+        self.donor_email: Optional[str] = None
 
-    def get_payment_context(self) -> dict:
+    def get_payment_context(self, session_id: str = "") -> dict:
         """Get payment context dict for the payment tool."""
         return {
             "stripe_customer_id": self.stripe_customer_id,
             "payment_methods": self.payment_methods,
             "payment_setup_complete": self.payment_setup_complete,
+            "donor_email": self.donor_email,
+            "session_id": session_id,
         }
 
 
@@ -186,7 +189,7 @@ async def chat(request: ChatRequest):
         session_data, session_id = get_or_create_session(request.session_id)
 
         # Set payment context for the payment tool
-        set_payment_context(session_data.get_payment_context())
+        set_payment_context(session_data.get_payment_context(session_id))
 
         response = session_data.chatbot.chat(request.message)
 
@@ -353,6 +356,21 @@ async def payment_status(session_id: str):
         payment_methods=session_data.payment_methods,
         publishable_key=config.STRIPE_PUBLISHABLE_KEY,
     )
+
+
+class DonorEmailRequest(BaseModel):
+    """Request model for saving donor email."""
+    session_id: str
+    email: str
+
+
+@app.post("/payment/email", tags=["Payment"])
+async def save_donor_email(request: DonorEmailRequest):
+    """Save the donor's email to the session for Stripe receipts."""
+    if request.session_id not in sessions:
+        raise HTTPException(status_code=404, detail="Session not found")
+    sessions[request.session_id].donor_email = request.email
+    return {"success": True}
 
 
 # Serve frontend

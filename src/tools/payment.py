@@ -30,6 +30,7 @@ def payment_tool(
     amount: Optional[float] = None,
     description: Optional[str] = None,
     user_confirmation: bool = False,
+    donor_email: Optional[str] = None,
 ) -> str:
     """MANDATORY: Call this IMMEDIATELY when user mentions donate/donation/contribute.
 
@@ -37,13 +38,15 @@ def payment_tool(
 
     Actions:
     - "check_setup": CALL THIS FIRST to check if payment method exists
-    - "make_payment": Process donation (requires amount)
+    - "save_email": Save donor email for receipt (call before make_payment if email provided)
+    - "make_payment": Process donation (requires amount; ask for email first if not set)
 
     Args:
-        action: "check_setup" or "make_payment"
+        action: "check_setup", "save_email", or "make_payment"
         amount: Amount in CAD (for make_payment only)
         description: Optional description
         user_confirmation: True if user confirmed payment
+        donor_email: Donor's email address (for save_email action)
     """
     # Get payment context
     ctx = get_payment_context()
@@ -62,10 +65,12 @@ Please donate directly at https://northernontarioparty.org/donate-today/"""
         return _check_payment_setup(ctx)
     elif action == "list_methods":
         return _list_payment_methods(ctx)
+    elif action == "save_email":
+        return _save_donor_email(ctx, donor_email)
     elif action == "make_payment":
         return _make_payment(ctx, amount, description, user_confirmation)
     else:
-        return f"Unknown action: {action}. Valid actions are: check_setup, list_methods, make_payment"
+        return f"Unknown action: {action}. Valid actions are: check_setup, save_email, list_methods, make_payment"
 
 
 def _check_payment_setup(ctx: dict) -> str:
@@ -116,6 +121,32 @@ Click the "Setup Payment" button to securely add a card through Stripe."""
     return result
 
 
+def _save_donor_email(ctx: dict, email: Optional[str]) -> str:
+    """Save donor email to session via API."""
+    if not email:
+        return "Please provide your email address so we can send you a receipt."
+
+    import re
+    if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+        return "That doesn't look like a valid email address. Please provide a valid email."
+
+    session_id = ctx.get("session_id")
+    if session_id:
+        import httpx
+        try:
+            httpx.post(
+                "http://localhost:8000/payment/email",
+                json={"session_id": session_id, "email": email},
+                timeout=5,
+            )
+        except Exception:
+            pass
+
+    # Also update local context so current request benefits immediately
+    ctx["donor_email"] = email
+    return f"Got it! Receipt will be sent to {email}."
+
+
 def _make_payment(
     ctx: dict,
     amount: Optional[float],
@@ -129,6 +160,10 @@ def _make_payment(
 
     if amount <= 0:
         return "The donation amount must be greater than $0."
+
+    # Ask for email if not yet provided
+    if not ctx.get("donor_email"):
+        return "What email address should we send your donation receipt to?"
 
     # Check spending cap
     spending_cap = config.PAYMENT_SPENDING_CAP
@@ -177,6 +212,7 @@ Please confirm by saying "Yes, I confirm the ${amount:.2f} donation" or similar.
             payment_method_id=primary_method["id"],
             amount=amount,
             description=payment_description,
+            receipt_email=ctx.get("donor_email"),
         )
 
         if result.get("success"):
