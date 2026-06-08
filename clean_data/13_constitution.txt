@@ -1,0 +1,30 @@
+================================================================================
+PAGE: Constitution (Governance)
+URL: https://northernontarioparty.org/constitution/
+================================================================================
+
+CONSTITUTION
+------------
+Note: The actual constitutional text is not displayed on this webpage. The
+page functions as a navigation and information hub.
+
+To access the full constitutional text, follow the "Party Constitution" link
+in the navigation menu to view or download the complete document.
+
+
+RELATED GOVERNANCE DOCUMENTS
+----------------------------
+- The Party Bylaws
+- Leadership Election Rules
+- Party History
+- Executive Board information
+
+
+PAGE STRUCTURE
+--------------
+The document includes:
+- Header with party logo
+- Main navigation menu listing 14 regional ridings across Northern Ontario
+- Footer with social media links
+
+================================================================================

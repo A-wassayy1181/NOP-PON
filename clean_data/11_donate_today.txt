@@ -1,0 +1,29 @@
+================================================================================
+PAGE: Donate Today
+URL: https://northernontarioparty.org/donate-today/
+================================================================================
+
+DONATION PRODUCTS
+-----------------
+
+OPTION 1: DONATE
+----------------
+Original Price: $30.00
+Current Price: $20.00 (33% off)
+Action: Add to cart available
+
+
+OPTION 2: MEMBERSHIP PLAN (1-3 YEARS)
+-------------------------------------
+Original Price: $30.00
+Current Price: $20.00 (33% off)
+Action: Add to cart available
+
+
+PAYMENT INFORMATION
+-------------------
+Both donation options show discounted pricing (33% off original amounts)
+Cart functionality available for immediate purchase
+Newsletter subscription option provided on the page
+
+================================================================================

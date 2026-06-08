@@ -1,0 +1,54 @@
+================================================================================
+NORTHERN ONTARIO PARTY - WEBSITE DATA INDEX
+================================================================================
+Website: https://northernontarioparty.org/
+Scraped: 2026-06-04
+Total Pages: 14
+================================================================================
+
+PARTY OVERVIEW
+--------------
+Name: Northern Ontario Party (NOP)
+Founded: 1998
+Location: Thunder Bay, Ontario, Canada
+
+
+SCRAPED FILES
+-------------
+| #  | File                              | Page                       | Content Level |
+|----|-----------------------------------|----------------------------|---------------|
+| 01 | 01_home.txt                       | Home                       | Full          |
+| 02 | 02_about.txt                      | About                      | Full          |
+| 03 | 03_executive_board.txt            | Executive Board            | Full          |
+| 04 | 04_party_constitution.txt         | Party Constitution         | Partial       |
+| 05 | 05_party_history.txt              | Party History              | Minimal       |
+| 06 | 06_blog.txt                       | Blog                       | Full          |
+| 07 | 07_in_the_news.txt                | In the NEWS                | Minimal       |
+| 08 | 08_party_zone.txt                 | Party Zone                 | Minimal       |
+| 09 | 09_contact.txt                    | Contact                    | Full          |
+| 10 | 10_join_the_party.txt             | Join the Party             | Full          |
+| 11 | 11_donate_today.txt               | Donate Today               | Full          |
+| 12 | 12_events.txt                     | Events                     | Minimal       |
+| 13 | 13_constitution.txt               | Constitution (Governance)  | Partial       |
+| 14 | 14_leadership_election_rules.txt  | Leadership Election Rules  | Partial       |
+
+
+ELECTORAL RIDINGS (14 Districts)
+--------------------------------
+- Timmins
+- Thunder Bay (multiple areas)
+- Sudbury
+- Sault Ste Marie
+- Other Northern Ontario regions
+
+
+BLOG CATEGORIES
+---------------
+- Campaign
+- Diplomatic
+- Election
+- Governance
+- Governmental
+- Public Affairs
+
+================================================================================

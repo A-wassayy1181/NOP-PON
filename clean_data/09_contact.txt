@@ -1,0 +1,22 @@
+================================================================================
+PAGE: Contact
+URL: https://northernontarioparty.org/contact/
+================================================================================
+
+GET IN TOUCH
+------------
+The organization welcomes questions, feedback, and support. They invite
+people to learn more about their movement, get involved in campaigns, or
+share concerns.
+
+
+CONTACT FORM
+------------
+A contact form is available with a subject line dropdown menu for inquiries.
+
+
+NEWSLETTER SUBSCRIPTION
+-----------------------
+An email subscription option is available for updates.
+
+================================================================================
