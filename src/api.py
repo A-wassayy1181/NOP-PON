@@ -327,6 +327,7 @@ async def payment_setup_complete(session_id: str, checkout_session_id: str):
             "exp_month": payment_info["card_exp_month"],
             "exp_year": payment_info["card_exp_year"],
         }]
+        session_data.donor_email = payment_info.get("donor_email")
         session_data.payment_setup_complete = True
         session_data.pending_checkout_session_id = None
 

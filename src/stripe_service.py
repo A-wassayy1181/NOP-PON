@@ -116,6 +116,15 @@ class StripeService:
         card_exp_month = card.exp_month if hasattr(card, 'exp_month') else card["exp_month"]
         card_exp_year = card.exp_year if hasattr(card, 'exp_year') else card["exp_year"]
 
+        # Grab email from checkout session (user entered it during Stripe Checkout)
+        donor_email = None
+        try:
+            customer_details = checkout_session.customer_details
+            if customer_details:
+                donor_email = customer_details.email
+        except Exception:
+            pass
+
         print(f"DEBUG: Returning payment info - card: {card_brand} ****{card_last4}")
         return {
             "customer_id": customer_id,
@@ -124,6 +133,7 @@ class StripeService:
             "card_last4": card_last4,
             "card_exp_month": card_exp_month,
             "card_exp_year": card_exp_year,
+            "donor_email": donor_email,
         }
 
     def get_customer_payment_methods(self, customer_id: str) -> list:

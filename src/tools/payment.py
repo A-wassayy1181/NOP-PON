@@ -161,10 +161,6 @@ def _make_payment(
     if amount <= 0:
         return "The donation amount must be greater than $0."
 
-    # Ask for email if not yet provided
-    if not ctx.get("donor_email"):
-        return "What email address should we send your donation receipt to?"
-
     # Check spending cap
     spending_cap = config.PAYMENT_SPENDING_CAP
     if amount > spending_cap:
