@@ -252,7 +252,7 @@
             color: #666;
         }
 
-        /* Payment button styling */
+        /* Payment button styling - Stripe */
         .quick-btn.payment-btn {
             background: #635bff;
             color: white;
@@ -270,6 +270,28 @@
         }
 
         .quick-btn.payment-btn.ready:hover {
+            background: #218838;
+            border-color: #218838;
+        }
+
+        /* Payment button styling - PayPal */
+        .quick-btn.paypal-btn {
+            background: #0070ba;
+            color: white;
+            border-color: #0070ba;
+        }
+
+        .quick-btn.paypal-btn:hover {
+            background: #005ea6;
+            border-color: #005ea6;
+        }
+
+        .quick-btn.paypal-btn.ready {
+            background: #28a745;
+            border-color: #28a745;
+        }
+
+        .quick-btn.paypal-btn.ready:hover {
             background: #218838;
             border-color: #218838;
         }
@@ -305,6 +327,7 @@
             <span class="status-dot"></span>
             <span class="status-text">Payment not set up</span>
             <span class="card-info" id="card-info"></span>
+            <span class="paypal-info" id="paypal-info"></span>
         </div>
 
         <div class="chat-messages" id="chat-messages">
@@ -335,7 +358,8 @@ How can I help you today?</div>
             <button class="quick-btn" onclick="sendQuickMessage('How can I donate?')">Donate</button>
             <button class="quick-btn" onclick="sendQuickMessage('Who is the party leader?')">Leadership</button>
             <button class="quick-btn" onclick="sendQuickMessage('How do I contact the party?')">Contact</button>
-            <button class="quick-btn payment-btn" id="payment-btn" onclick="setupPayment()">Setup Payment</button>
+            <button class="quick-btn payment-btn" id="payment-btn" onclick="setupPayment()">Setup Card</button>
+            <button class="quick-btn paypal-btn" id="paypal-btn" onclick="setupPayPal()">Setup PayPal</button>
         </div>
 
         <div class="chat-input-container">
@@ -350,6 +374,7 @@ How can I help you today?</div>
         const API_URL = 'http://localhost:8000';
         let sessionId = null;
         let paymentSetupComplete = false;
+        let paypalSetupComplete = false;
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -361,23 +386,41 @@ How can I help you today?</div>
                 sessionId = urlParams.get('session_id');
             }
 
-            // Handle payment success
+            // Handle Stripe payment success
             if (urlParams.get('payment_success')) {
-                addSuccess('Payment method set up successfully! You can now make donations through the chat.');
+                addSuccess('Card payment method set up successfully! You can now make donations through the chat.');
                 updatePaymentStatus();
-                // Clean URL
                 window.history.replaceState({}, document.title, '/');
             }
 
-            // Handle payment cancellation
+            // Handle Stripe payment cancellation
             if (urlParams.get('payment_cancelled')) {
-                addInfo('Payment setup was cancelled. You can try again anytime.');
+                addInfo('Card setup was cancelled. You can try again anytime.');
                 window.history.replaceState({}, document.title, '/');
             }
 
-            // Handle payment error
+            // Handle Stripe payment error
             if (urlParams.get('payment_error')) {
-                addError('Payment setup failed: ' + urlParams.get('payment_error'));
+                addError('Card setup failed: ' + urlParams.get('payment_error'));
+                window.history.replaceState({}, document.title, '/');
+            }
+
+            // Handle PayPal success
+            if (urlParams.get('paypal_success')) {
+                addSuccess('PayPal linked successfully! You can now make donations using PayPal.');
+                updatePaymentStatus();
+                window.history.replaceState({}, document.title, '/');
+            }
+
+            // Handle PayPal cancellation
+            if (urlParams.get('paypal_cancelled')) {
+                addInfo('PayPal setup was cancelled. You can try again anytime.');
+                window.history.replaceState({}, document.title, '/');
+            }
+
+            // Handle PayPal error
+            if (urlParams.get('paypal_error')) {
+                addError('PayPal setup failed: ' + urlParams.get('paypal_error'));
                 window.history.replaceState({}, document.title, '/');
             }
 
@@ -506,10 +549,8 @@ How can I help you today?</div>
         }
 
         // Payment functions
-        async function setupPayment() {
-            // First ensure we have a session
+        async function ensureSession() {
             if (!sessionId) {
-                // Create a session by sending a dummy message or directly requesting one
                 try {
                     const response = await fetch(`${API_URL}/chat`, {
                         method: 'POST',
@@ -518,11 +559,18 @@ How can I help you today?</div>
                     });
                     const data = await response.json();
                     sessionId = data.session_id;
+                    return true;
                 } catch (error) {
                     addError('Failed to create session. Please try again.');
-                    return;
+                    return false;
                 }
             }
+            return true;
+        }
+
+        async function setupPayment() {
+            // First ensure we have a session
+            if (!await ensureSession()) return;
 
             // Request checkout session from backend
             try {
@@ -534,7 +582,7 @@ How can I help you today?</div>
 
                 if (!response.ok) {
                     const error = await response.json();
-                    addError(error.detail || 'Failed to start payment setup');
+                    addError(error.detail || 'Failed to start card setup');
                     return;
                 }
 
@@ -545,7 +593,36 @@ How can I help you today?</div>
 
             } catch (error) {
                 addError('Failed to connect to payment service. Please try again.');
-                console.error('Payment setup error:', error);
+                console.error('Card setup error:', error);
+            }
+        }
+
+        async function setupPayPal() {
+            // First ensure we have a session
+            if (!await ensureSession()) return;
+
+            // Request PayPal setup from backend
+            try {
+                const response = await fetch(`${API_URL}/payment/paypal/setup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ session_id: sessionId })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    addError(error.detail || 'Failed to start PayPal setup');
+                    return;
+                }
+
+                const data = await response.json();
+
+                // Redirect to PayPal approval
+                window.location.href = data.approval_url;
+
+            } catch (error) {
+                addError('Failed to connect to PayPal service. Please try again.');
+                console.error('PayPal setup error:', error);
             }
         }
 
@@ -559,32 +636,73 @@ How can I help you today?</div>
                 const statusEl = document.getElementById('payment-status');
                 const statusText = statusEl.querySelector('.status-text');
                 const cardInfo = document.getElementById('card-info');
+                const paypalInfo = document.getElementById('paypal-info');
                 const paymentBtn = document.getElementById('payment-btn');
+                const paypalBtn = document.getElementById('paypal-btn');
 
-                if (data.setup_complete && data.payment_methods.length > 0) {
-                    paymentSetupComplete = true;
-                    const method = data.payment_methods[0];
+                // Check Stripe status
+                const hasCard = data.setup_complete && data.payment_methods.length > 0;
+                // Check PayPal status
+                const hasPayPal = data.paypal_setup_complete;
 
+                paymentSetupComplete = hasCard;
+                paypalSetupComplete = hasPayPal;
+
+                // Update status display
+                if (hasCard || hasPayPal) {
                     statusEl.classList.remove('not-setup');
                     statusEl.classList.add('ready');
                     statusText.textContent = 'Payment ready';
-                    cardInfo.textContent = `(${method.brand} ****${method.last4})`;
 
-                    paymentBtn.classList.add('ready');
-                    paymentBtn.textContent = 'Payment Ready';
-                    paymentBtn.onclick = function() {
-                        sendQuickMessage('I would like to make a donation');
-                    };
+                    // Show card info
+                    if (hasCard) {
+                        const method = data.payment_methods[0];
+                        cardInfo.textContent = `Card: ${method.brand} ****${method.last4}`;
+                    } else {
+                        cardInfo.textContent = '';
+                    }
+
+                    // Show PayPal info
+                    if (hasPayPal) {
+                        paypalInfo.textContent = data.paypal_email ? `PayPal: ${data.paypal_email}` : 'PayPal: linked';
+                        if (hasCard) {
+                            paypalInfo.textContent = ' | ' + paypalInfo.textContent;
+                        }
+                    } else {
+                        paypalInfo.textContent = '';
+                    }
                 } else {
-                    paymentSetupComplete = false;
                     statusEl.classList.remove('ready');
                     statusEl.classList.add('not-setup');
                     statusText.textContent = 'Payment not set up';
                     cardInfo.textContent = '';
+                    paypalInfo.textContent = '';
+                }
 
+                // Update Card button
+                if (hasCard) {
+                    paymentBtn.classList.add('ready');
+                    paymentBtn.textContent = 'Card Ready';
+                    paymentBtn.onclick = function() {
+                        sendQuickMessage('I would like to make a donation with my card');
+                    };
+                } else {
                     paymentBtn.classList.remove('ready');
-                    paymentBtn.textContent = 'Setup Payment';
+                    paymentBtn.textContent = 'Setup Card';
                     paymentBtn.onclick = setupPayment;
+                }
+
+                // Update PayPal button
+                if (hasPayPal) {
+                    paypalBtn.classList.add('ready');
+                    paypalBtn.textContent = 'PayPal Ready';
+                    paypalBtn.onclick = function() {
+                        sendQuickMessage('I would like to make a donation with PayPal');
+                    };
+                } else {
+                    paypalBtn.classList.remove('ready');
+                    paypalBtn.textContent = 'Setup PayPal';
+                    paypalBtn.onclick = setupPayPal;
                 }
 
             } catch (error) {

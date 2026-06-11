@@ -44,6 +44,11 @@ class Config:
     STRIPE_SECRET_KEY: str = os.getenv("STRIPE_SECRET_KEY", "")
     STRIPE_PUBLISHABLE_KEY: str = os.getenv("STRIPE_PUBLISHABLE_KEY", "")
 
+    # PayPal Configuration
+    PAYPAL_CLIENT_ID: str = os.getenv("PAYPAL_CLIENT_ID", "")
+    PAYPAL_CLIENT_SECRET: str = os.getenv("PAYPAL_CLIENT_SECRET", "")
+    PAYPAL_MODE: str = os.getenv("PAYPAL_MODE", "sandbox")  # sandbox or live
+
     # Payment Guardrails (CAD)
     PAYMENT_SPENDING_CAP: float = float(os.getenv("PAYMENT_SPENDING_CAP", "100.00"))
     PAYMENT_REQUIRE_CONFIRMATION_ABOVE: float = float(

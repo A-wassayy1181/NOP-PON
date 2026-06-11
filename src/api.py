@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 from .agent import NOPChatbot
 from .config import config
 from .stripe_service import stripe_service
+from .paypal_service import paypal_service
 from .tools.payment import set_payment_context
 
 # Frontend path
@@ -66,29 +67,45 @@ class PaymentSetupResponse(BaseModel):
 
 class PaymentStatusResponse(BaseModel):
     """Response model for payment status endpoint."""
-    setup_complete: bool = Field(..., description="Whether payment is set up")
-    payment_methods: list = Field(default=[], description="List of saved payment methods")
+    # Stripe status
+    setup_complete: bool = Field(..., description="Whether Stripe payment is set up")
+    payment_methods: list = Field(default=[], description="List of saved Stripe payment methods")
     publishable_key: str = Field(..., description="Stripe publishable key for frontend")
+    # PayPal status
+    paypal_setup_complete: bool = Field(default=False, description="Whether PayPal is set up")
+    paypal_email: Optional[str] = Field(default=None, description="Linked PayPal email")
+    paypal_client_id: str = Field(default="", description="PayPal client ID for frontend")
 
 
 class SessionData:
     """Container for session data including chatbot and payment info."""
     def __init__(self):
         self.chatbot: Optional[NOPChatbot] = None
+        # Stripe fields
         self.stripe_customer_id: Optional[str] = None
         self.payment_methods: list = []
         self.payment_setup_complete: bool = False
         self.pending_checkout_session_id: Optional[str] = None
         self.donor_email: Optional[str] = None
+        # PayPal fields
+        self.paypal_payment_token: Optional[str] = None
+        self.paypal_payer_email: Optional[str] = None
+        self.paypal_setup_complete: bool = False
+        self.pending_paypal_setup_token: Optional[str] = None
 
     def get_payment_context(self, session_id: str = "") -> dict:
         """Get payment context dict for the payment tool."""
         return {
+            # Stripe context
             "stripe_customer_id": self.stripe_customer_id,
             "payment_methods": self.payment_methods,
             "payment_setup_complete": self.payment_setup_complete,
             "donor_email": self.donor_email,
             "session_id": session_id,
+            # PayPal context
+            "paypal_payment_token": self.paypal_payment_token,
+            "paypal_payer_email": self.paypal_payer_email,
+            "paypal_setup_complete": self.paypal_setup_complete,
         }
 
 
@@ -143,7 +160,13 @@ async def lifespan(app: FastAPI):
     if stripe_service.is_configured():
         print("Stripe payment integration enabled")
     else:
-        print("Warning: Stripe not configured. Payment features will be disabled.")
+        print("Warning: Stripe not configured. Stripe payments will be disabled.")
+
+    # Check PayPal configuration
+    if paypal_service.is_configured():
+        print("PayPal payment integration enabled")
+    else:
+        print("Warning: PayPal not configured. PayPal payments will be disabled.")
 
     yield
     # Shutdown
@@ -349,6 +372,9 @@ async def payment_status(session_id: str):
             setup_complete=False,
             payment_methods=[],
             publishable_key=config.STRIPE_PUBLISHABLE_KEY,
+            paypal_setup_complete=False,
+            paypal_email=None,
+            paypal_client_id=config.PAYPAL_CLIENT_ID,
         )
 
     session_data = sessions[session_id]
@@ -356,7 +382,103 @@ async def payment_status(session_id: str):
         setup_complete=session_data.payment_setup_complete,
         payment_methods=session_data.payment_methods,
         publishable_key=config.STRIPE_PUBLISHABLE_KEY,
+        paypal_setup_complete=session_data.paypal_setup_complete,
+        paypal_email=session_data.paypal_payer_email,
+        paypal_client_id=config.PAYPAL_CLIENT_ID,
     )
+
+
+class PayPalSetupRequest(BaseModel):
+    """Request model for PayPal setup endpoint."""
+    session_id: str = Field(..., description="Session ID for the user")
+
+
+class PayPalSetupResponse(BaseModel):
+    """Response model for PayPal setup endpoint."""
+    approval_url: str = Field(..., description="PayPal approval URL to redirect user to")
+    setup_token_id: str = Field(..., description="PayPal setup token ID")
+
+
+@app.post("/payment/paypal/setup", response_model=PayPalSetupResponse, tags=["Payment"])
+async def paypal_setup(request: PayPalSetupRequest):
+    """Create a PayPal vault setup token.
+
+    Returns an approval URL where the user should be redirected to link their PayPal account.
+    """
+    if not paypal_service.is_configured():
+        raise HTTPException(
+            status_code=503,
+            detail="PayPal is not configured. Please donate at https://northernontarioparty.org/donate-today/",
+        )
+
+    try:
+        # Ensure session exists
+        session_data, session_id = get_or_create_session(request.session_id)
+
+        # Create PayPal setup token
+        base_url = "http://localhost:8000"
+        result = paypal_service.create_setup_token(
+            return_url=f"{base_url}/payment/paypal/setup/complete?session_id={session_id}",
+            cancel_url=f"{base_url}/?paypal_cancelled=true",
+            session_id=session_id,
+        )
+
+        # Store the setup token for verification
+        session_data.pending_paypal_setup_token = result["setup_token_id"]
+
+        return PayPalSetupResponse(
+            approval_url=result["approval_url"],
+            setup_token_id=result["setup_token_id"],
+        )
+
+    except Exception as e:
+        import traceback
+        print(f"PayPal setup error: {e}")
+        print(f"Full traceback: {traceback.format_exc()}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to create PayPal setup: {str(e)}",
+        )
+
+
+@app.get("/payment/paypal/setup/complete", tags=["Payment"])
+async def paypal_setup_complete(session_id: str):
+    """Callback after successful PayPal vault approval.
+
+    Converts the setup token to a payment token and stores it in session.
+    Redirects back to the chat interface.
+    """
+    from fastapi.responses import RedirectResponse
+
+    if not paypal_service.is_configured():
+        return RedirectResponse(url="/?paypal_error=not_configured")
+
+    try:
+        # Get or create session
+        session_data, session_id = get_or_create_session(session_id)
+
+        # Get the pending setup token
+        setup_token_id = session_data.pending_paypal_setup_token
+        if not setup_token_id:
+            return RedirectResponse(url="/?paypal_error=no_setup_token")
+
+        # Convert setup token to payment token
+        token_info = paypal_service.create_payment_token(setup_token_id)
+
+        # Store in session
+        session_data.paypal_payment_token = token_info["payment_token_id"]
+        session_data.paypal_payer_email = token_info.get("payer_email")
+        session_data.paypal_setup_complete = True
+        session_data.pending_paypal_setup_token = None
+
+        # Redirect back to chat with success message
+        return RedirectResponse(url=f"/?paypal_success=true&session_id={session_id}")
+
+    except Exception as e:
+        import traceback
+        print(f"PayPal setup complete error: {e}")
+        print(f"Full traceback: {traceback.format_exc()}")
+        return RedirectResponse(url=f"/?paypal_error={str(e)}")
 
 
 class DonorEmailRequest(BaseModel):
