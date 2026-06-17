@@ -288,6 +288,9 @@ async def payment_setup(request: PaymentSetupRequest):
 
     Returns a checkout URL where the user should be redirected to enter card details.
     """
+    from starlette.requests import Request
+    from fastapi import Request as FastAPIRequest
+
     if not stripe_service.is_configured():
         raise HTTPException(
             status_code=503,
@@ -298,9 +301,13 @@ async def payment_setup(request: PaymentSetupRequest):
         # Ensure session exists
         session_data, session_id = get_or_create_session(request.session_id)
 
-        # Create Stripe Checkout session
-        # Use the API server URL for callbacks
-        base_url = "http://localhost:8000"
+        # Use environment variable for base URL, fallback to localhost for development
+        import os
+        base_url = os.getenv("VERCEL_URL")
+        if base_url:
+            base_url = f"https://{base_url}"
+        else:
+            base_url = os.getenv("BASE_URL", "http://localhost:8000")
         result = stripe_service.create_checkout_session(
             success_url=f"{base_url}/payment/setup/complete?session_id={session_id}&checkout_session_id={{CHECKOUT_SESSION_ID}}",
             cancel_url=f"{base_url}/?payment_cancelled=true",
@@ -415,8 +422,13 @@ async def paypal_setup(request: PayPalSetupRequest):
         # Ensure session exists
         session_data, session_id = get_or_create_session(request.session_id)
 
-        # Create PayPal setup token
-        base_url = "http://localhost:8000"
+        # Use environment variable for base URL, fallback to localhost for development
+        import os
+        base_url = os.getenv("VERCEL_URL")
+        if base_url:
+            base_url = f"https://{base_url}"
+        else:
+            base_url = os.getenv("BASE_URL", "http://localhost:8000")
         result = paypal_service.create_setup_token(
             return_url=f"{base_url}/payment/paypal/setup/complete?session_id={session_id}",
             cancel_url=f"{base_url}/?paypal_cancelled=true",
