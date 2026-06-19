@@ -1,6 +1,7 @@
 # LangChain core
 langchain>=0.2.0
 langchain-core>=0.2.0
+langgraph>=0.2.0
 
 # LLM providers
 langchain-openai>=0.1.0
