@@ -5,6 +5,9 @@
     { "source": "/chat", "destination": "/api/index" },
     { "source": "/escalate", "destination": "/api/index" },
     { "source": "/clear", "destination": "/api/index" },
-    { "source": "/payment/:path*", "destination": "/api/index" }
+    { "source": "/payment/:path*", "destination": "/api/index" },
+    { "source": "/docs", "destination": "/api/index" },
+    { "source": "/redoc", "destination": "/api/index" },
+    { "source": "/openapi.json", "destination": "/api/index" }
   ]
 }
