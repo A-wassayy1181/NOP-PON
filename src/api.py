@@ -202,6 +202,24 @@ async def health_check():
     )
 
 
+@app.get("/debug", tags=["System"])
+async def debug_info():
+    """Show which environment variables are configured (values hidden)."""
+    import os
+    return {
+        "env_vars_present": {
+            "LLM_PROVIDER": bool(os.getenv("LLM_PROVIDER")),
+            "OPENROUTER_API_KEY": bool(os.getenv("OPENROUTER_API_KEY")),
+            "OPENAI_API_KEY": bool(os.getenv("OPENAI_API_KEY")),
+            "ANTHROPIC_API_KEY": bool(os.getenv("ANTHROPIC_API_KEY")),
+            "STRIPE_SECRET_KEY": bool(os.getenv("STRIPE_SECRET_KEY")),
+            "STRIPE_PUBLISHABLE_KEY": bool(os.getenv("STRIPE_PUBLISHABLE_KEY")),
+        },
+        "config_valid": config.validate(),
+        "llm_provider": config.LLM_PROVIDER,
+    }
+
+
 @app.post("/chat", response_model=ChatResponse, tags=["Chat"])
 async def chat(request: ChatRequest):
     """Send a message to the chatbot and receive a response.
