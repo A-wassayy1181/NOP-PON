@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOP Chatbot - Northern Ontario Party</title>
+    <style>  
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .chat-header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .chat-header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message.user {
+            align-items: flex-end;
+        }
+
+        .message.assistant {
+            align-items: flex-start;
+        }
+
+        .message-content {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .message.user .message-content {
+            background: #1a472a;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-label {
+            font-size: 0.75rem;
+            color: #666;
+            margin-bottom: 4px;
+            padding: 0 8px;
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        #message-input {
+            flex: 1;
+            padding: 14px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        #message-input:focus {
+            border-color: #1a472a;
+        }
+
+        #send-btn {
+            padding: 14px 28px;
+            background: #1a472a;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        #send-btn:hover {
+            background: #2d5a3d;
+        }
+
+        #send-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 12px 16px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            width: fit-content;
+        }
+
+        .typing-indicator.show {
+            display: block;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            background: #1a472a;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-6px); }
+        }
+
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 0 20px 15px;
+            background: white;
+        }
+
+        .quick-btn {
+            padding: 8px 16px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-btn:hover {
+            background: #1a472a;
+            color: white;
+            border-color: #1a472a;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c00;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border: 1px solid #fcc;
+        }
+
+        /* Markdown-like styling for links */
+        .message-content a {
+            color: #1a472a;
+            text-decoration: underline;
+        }
+
+        .message.user .message-content a {
+            color: #90EE90;
+        }
+
+        /* Payment status indicator */
+        .payment-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.85rem;
+        }
+
+        .payment-status .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ccc;
+        }
+
+        .payment-status.ready .status-dot {
+            background: #28a745;
+        }
+
+        .payment-status.not-setup .status-dot {
+            background: #ffc107;
+        }
+
+        .payment-status .card-info {
+            color: #666;
+        }
+
+        /* Payment button styling - Stripe */
+        .quick-btn.payment-btn {
+            background: #635bff;
+            color: white;
+            border-color: #635bff;
+        }
+
+        .quick-btn.payment-btn:hover {
+            background: #4b45c6;
+            border-color: #4b45c6;
+        }
+
+        .quick-btn.payment-btn.ready {
+            background: #28a745;
+            border-color: #28a745;
+        }
+
+        .quick-btn.payment-btn.ready:hover {
+            background: #218838;
+            border-color: #218838;
+        }
+
+        /* Payment button styling - PayPal */
+        .quick-btn.paypal-btn {
+            background: #0070ba;
+            color: white;
+            border-color: #0070ba;
+        }
+
+        .quick-btn.paypal-btn:hover {
+            background: #005ea6;
+            border-color: #005ea6;
+        }
+
+        .quick-btn.paypal-btn.ready {
+            background: #28a745;
+            border-color: #28a745;
+        }
+
+        .quick-btn.paypal-btn.ready:hover {
+            background: #218838;
+            border-color: #218838;
+        }
+
+        /* Success/info messages */
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border: 1px solid #c3e6cb;
+        }
+
+        .info-message {
+            background: #cce5ff;
+            color: #004085;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border: 1px solid #b8daff;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>Northern Ontario Party</h1>
+            <p>AI Assistant - Ask me anything about NOP!</p>
+        </div>
+
+        <div class="payment-status not-setup" id="payment-status">
+            <span class="status-dot"></span>
+            <span class="status-text">Payment not set up</span>
+            <span class="card-info" id="card-info"></span>
+            <span class="paypal-info" id="paypal-info"></span>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+            <div class="message assistant">
+                <span class="message-label">Assistant</span>
+                <div class="message-content">Welcome! I'm the Northern Ontario Party assistant. I can help you with:
+
+- Information about the party and its mission
+- How to join or donate
+- Contact information
+- Party leadership and events
+
+How can I help you today?</div>
+            </div>
+        </div>
+
+        <div class="typing-indicator" id="typing-indicator">
+            <div class="typing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <button class="quick-btn" onclick="sendQuickMessage('What is the Northern Ontario Party?')">About NOP</button>
+            <button class="quick-btn" onclick="sendQuickMessage('How do I join the party?')">Join</button>
+            <button class="quick-btn" onclick="sendQuickMessage('How can I donate?')">Donate</button>
+            <button class="quick-btn" onclick="sendQuickMessage('Who is the party leader?')">Leadership</button>
+            <button class="quick-btn" onclick="sendQuickMessage('How do I contact the party?')">Contact</button>
+            <button class="quick-btn payment-btn" id="payment-btn" onclick="setupPayment()">Setup Card</button>
+            <button class="quick-btn paypal-btn" id="paypal-btn" onclick="setupPayPal()">Setup PayPal</button>
+        </div>
+
+        <div class="chat-input-container">
+            <div class="chat-input-wrapper">
+                <input type="text" id="message-input" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
+                <button id="send-btn" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '';  // Use relative URLs for production
+        let sessionId = null;
+        let paymentSetupComplete = false;
+        let paypalSetupComplete = false;
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check URL parameters for payment redirect
+            const urlParams = new URLSearchParams(window.location.search);
+
+            // Restore session ID from URL if present
+            if (urlParams.get('session_id')) {
+                sessionId = urlParams.get('session_id');
+            }
+
+            // Handle Stripe payment success
+            if (urlParams.get('payment_success')) {
+                addSuccess('Card payment method set up successfully! You can now make donations through the chat.');
+                updatePaymentStatus();
+                window.history.replaceState({}, document.title, '/');
+            }
+
+            // Handle Stripe payment cancellation
+            if (urlParams.get('payment_cancelled')) {
+                addInfo('Card setup was cancelled. You can try again anytime.');
+                window.history.replaceState({}, document.title, '/');
+            }
+
+            // Handle Stripe payment error
+            if (urlParams.get('payment_error')) {
+                addError('Card setup failed: ' + urlParams.get('payment_error'));
+                window.history.replaceState({}, document.title, '/');
+            }
+
+            // Handle PayPal success
+            if (urlParams.get('paypal_success')) {
+                addSuccess('PayPal linked successfully! You can now make donations using PayPal.');
+                updatePaymentStatus();
+                window.history.replaceState({}, document.title, '/');
+            }
+
+            // Handle PayPal cancellation
+            if (urlParams.get('paypal_cancelled')) {
+                addInfo('PayPal setup was cancelled. You can try again anytime.');
+                window.history.replaceState({}, document.title, '/');
+            }
+
+            // Handle PayPal error
+            if (urlParams.get('paypal_error')) {
+                addError('PayPal setup failed: ' + urlParams.get('paypal_error'));
+                window.history.replaceState({}, document.title, '/');
+            }
+
+            // Check payment status if we have a session
+            if (sessionId) {
+                updatePaymentStatus();
+            }
+
+            // Focus input
+            document.getElementById('message-input').focus();
+        });
+
+        async function sendMessage() {
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // Add user message to chat
+            addMessage(message, 'user');
+            input.value = '';
+
+            // Show typing indicator
+            showTyping(true);
+
+            try {
+                const response = await fetch(`${API_URL}/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        session_id: sessionId
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                sessionId = data.session_id;
+
+                showTyping(false);
+                addMessage(data.response, 'assistant');
+
+            } catch (error) {
+                showTyping(false);
+                addError('Failed to connect to the chatbot. Error: ' + error.message);
+                console.error('Error:', error);
+            }
+        }
+
+        function sendQuickMessage(message) {
+            document.getElementById('message-input').value = message;
+            sendMessage();
+        }
+
+        function addMessage(text, role) {
+            const messagesDiv = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+
+            const label = role === 'user' ? 'You' : 'Assistant';
+
+            // Convert URLs to links
+            const linkedText = text.replace(
+                /(https?:\/\/[^\s]+)/g,
+                '<a href="$1" target="_blank">$1</a>'
+            );
+
+            messageDiv.innerHTML = `
+                <span class="message-label">${label}</span>
+                <div class="message-content">${linkedText}</div>
+            `;
+
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function addError(text) {
+            const messagesDiv = document.getElementById('chat-messages');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = text;
+            messagesDiv.appendChild(errorDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function showTyping(show) {
+            const indicator = document.getElementById('typing-indicator');
+            const sendBtn = document.getElementById('send-btn');
+
+            if (show) {
+                indicator.classList.add('show');
+                sendBtn.disabled = true;
+            } else {
+                indicator.classList.remove('show');
+                sendBtn.disabled = false;
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function addSuccess(text) {
+            const messagesDiv = document.getElementById('chat-messages');
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success-message';
+            successDiv.textContent = text;
+            messagesDiv.appendChild(successDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function addInfo(text) {
+            const messagesDiv = document.getElementById('chat-messages');
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'info-message';
+            infoDiv.textContent = text;
+            messagesDiv.appendChild(infoDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // Payment functions
+        async function ensureSession() {
+            if (!sessionId) {
+                try {
+                    const response = await fetch(`${API_URL}/chat`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: 'hello' })
+                    });
+                    const data = await response.json();
+                    sessionId = data.session_id;
+                    return true;
+                } catch (error) {
+                    addError('Failed to create session. Please try again.');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        async function setupPayment() {
+            // First ensure we have a session
+            if (!await ensureSession()) return;
+
+            // Request checkout session from backend
+            try {
+                const response = await fetch(`${API_URL}/payment/setup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ session_id: sessionId })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    addError(error.detail || 'Failed to start card setup');
+                    return;
+                }
+
+                const data = await response.json();
+
+                // Redirect to Stripe Checkout
+                window.location.href = data.checkout_url;
+
+            } catch (error) {
+                addError('Failed to connect to payment service. Please try again.');
+                console.error('Card setup error:', error);
+            }
+        }
+
+        async function setupPayPal() {
+            // First ensure we have a session
+            if (!await ensureSession()) return;
+
+            // Request PayPal setup from backend
+            try {
+                const response = await fetch(`${API_URL}/payment/paypal/setup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ session_id: sessionId })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    addError(error.detail || 'Failed to start PayPal setup');
+                    return;
+                }
+
+                const data = await response.json();
+
+                // Redirect to PayPal approval
+                window.location.href = data.approval_url;
+
+            } catch (error) {
+                addError('Failed to connect to PayPal service. Please try again.');
+                console.error('PayPal setup error:', error);
+            }
+        }
+
+        async function updatePaymentStatus() {
+            if (!sessionId) return;
+
+            try {
+                const response = await fetch(`${API_URL}/payment/status?session_id=${sessionId}`);
+                const data = await response.json();
+
+                const statusEl = document.getElementById('payment-status');
+                const statusText = statusEl.querySelector('.status-text');
+                const cardInfo = document.getElementById('card-info');
+                const paypalInfo = document.getElementById('paypal-info');
+                const paymentBtn = document.getElementById('payment-btn');
+                const paypalBtn = document.getElementById('paypal-btn');
+
+                // Check Stripe status
+                const hasCard = data.setup_complete && data.payment_methods.length > 0;
+                // Check PayPal status
+                const hasPayPal = data.paypal_setup_complete;
+
+                paymentSetupComplete = hasCard;
+                paypalSetupComplete = hasPayPal;
+
+                // Update status display
+                if (hasCard || hasPayPal) {
+                    statusEl.classList.remove('not-setup');
+                    statusEl.classList.add('ready');
+                    statusText.textContent = 'Payment ready';
+
+                    // Show card info
+                    if (hasCard) {
+                        const method = data.payment_methods[0];
+                        cardInfo.textContent = `Card: ${method.brand} ****${method.last4}`;
+                    } else {
+                        cardInfo.textContent = '';
+                    }
+
+                    // Show PayPal info
+                    if (hasPayPal) {
+                        paypalInfo.textContent = data.paypal_email ? `PayPal: ${data.paypal_email}` : 'PayPal: linked';
+                        if (hasCard) {
+                            paypalInfo.textContent = ' | ' + paypalInfo.textContent;
+                        }
+                    } else {
+                        paypalInfo.textContent = '';
+                    }
+                } else {
+                    statusEl.classList.remove('ready');
+                    statusEl.classList.add('not-setup');
+                    statusText.textContent = 'Payment not set up';
+                    cardInfo.textContent = '';
+                    paypalInfo.textContent = '';
+                }
+
+                // Update Card button
+                if (hasCard) {
+                    paymentBtn.classList.add('ready');
+                    paymentBtn.textContent = 'Card Ready';
+                    paymentBtn.onclick = function() {
+                        sendQuickMessage('I would like to make a donation with my card');
+                    };
+                } else {
+                    paymentBtn.classList.remove('ready');
+                    paymentBtn.textContent = 'Setup Card';
+                    paymentBtn.onclick = setupPayment;
+                }
+
+                // Update PayPal button
+                if (hasPayPal) {
+                    paypalBtn.classList.add('ready');
+                    paypalBtn.textContent = 'PayPal Ready';
+                    paypalBtn.onclick = function() {
+                        sendQuickMessage('I would like to make a donation with PayPal');
+                    };
+                } else {
+                    paypalBtn.classList.remove('ready');
+                    paypalBtn.textContent = 'Setup PayPal';
+                    paypalBtn.onclick = setupPayPal;
+                }
+
+            } catch (error) {
+                console.error('Error checking payment status:', error);
+            }
+        }
+    </script>
+</body>
+</html>

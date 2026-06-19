@@ -16,8 +16,9 @@ from .stripe_service import stripe_service
 from .paypal_service import paypal_service
 from .tools.payment import set_payment_context
 
-# Frontend path
-FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
+# Frontend path — check public/ (Vercel) then frontend/ (local dev)
+_root = Path(__file__).parent.parent
+FRONTEND_DIR = _root / "public" if (_root / "public" / "index.html").exists() else _root / "frontend"
 
 
 # Request/Response models
