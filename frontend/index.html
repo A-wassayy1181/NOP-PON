@@ -470,7 +470,7 @@ How can I help you today?</div>
 
             } catch (error) {
                 showTyping(false);
-                addError('Failed to connect to the chatbot. Make sure the API is running on localhost:8000');
+                addError('Failed to connect to the chatbot. Error: ' + error.message);
                 console.error('Error:', error);
             }
         }
